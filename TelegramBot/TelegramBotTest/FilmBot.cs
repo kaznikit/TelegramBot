@@ -26,7 +26,9 @@ namespace TelegramBotTest
       //var y = client();
       commands = new List<string> { "/genre", "/actor", "/setting", "/country", "/help" };
 
-      string conn = "Data Source = C:\\Users\\nkazachenko\\movie db\\kino_data.db; Version=3;New=False;Compress=True;";
+      //    string conn = "Data Source = C:\\Users\\nkazachenko\\movie db\\kino_data.db; Version=3;New=False;Compress=True;";
+      string conn = "Data Source = D:\\Repository\\TelegramBot\\TelegramBot\\TelegramBotTest\\Database\\kino_data.db; Version=3;New=False;Compress=True;";
+
       databaseWorker = new DatabaseWorker(conn);
 
  //     databaseWorker.LoadData("select * from dist_big_kino_data");
@@ -115,32 +117,35 @@ namespace TelegramBotTest
           }
           break;
         case "country":
-          List<string> countries = SplitRowByColumn(new List<string>(), RemoveWhitespace(e.Message.Text), 0);
-          string query = "select movie_name from dist_big_kino_data where movie_country = ";
-          bool flag = false;
-          foreach (var country in countries)
+          if (e.Message.Text != "/country")
           {
-            if (flag)
+            List<string> countries = SplitRowByColumn(new List<string>(), RemoveWhitespace(e.Message.Text), 0);
+            string query = "select movie_name from big_kino_data where movie_country = '";
+            bool flag = false;
+            foreach (var country in countries)
             {
-              query += " and movie_country = ";
+              if (flag)
+              {
+                query += " and movie_country = '";
+              }
+              query += country + "'";
+              flag = true;
             }
-            query += country;
-            flag = true;
+
+            var filmsList1 = databaseWorker.LoadData(query);
+
+            var uniqueFilms1 = filmsList1.GroupBy(x => x)
+              .Where(group => group.Count() > 1)
+              .Select(group => group.Key);
+
+            string text = $"List of films: {Environment.NewLine}";
+            foreach (var s in uniqueFilms1)
+            {
+              text += s + Environment.NewLine;
+            }
+            await filmBot.SendTextMessageAsync(chatId: e.Message.Chat, text: text);
+            await filmBot.SendTextMessageAsync(chatId: e.Message.Chat, text: "I'll find something to you in a second.");
           }
-
-          var filmsList1 = databaseWorker.LoadData(query);
-
-          var uniqueFilms1 = filmsList1.GroupBy(x => x)
-            .Where(group => group.Count() > 1)
-            .Select(group => group.Key);
-
-          string text = $"List of films: {Environment.NewLine}";
-          foreach (var s in uniqueFilms1)
-          {
-            text += s + Environment.NewLine;
-          }
-          await filmBot.SendTextMessageAsync(chatId: e.Message.Chat, text: text);
-          await filmBot.SendTextMessageAsync(chatId: e.Message.Chat, text: "I'll find something to you in a second.");
           switcher = "";
           break;
       }
