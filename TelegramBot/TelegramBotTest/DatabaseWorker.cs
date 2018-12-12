@@ -35,13 +35,19 @@ namespace TelegramBotTest
         List<string> movies = new List<string>();
         foreach (DataRow s in dataSet.Tables[0].Rows)
         {
-//          string name = s["name_eng"].ToString();
-         // string name2 = s["movie_name"].ToString();
+          //          string name = s["name_eng"].ToString();
+          // string name2 = s["movie_name"].ToString();
           //          string gg = s["list_name"].ToString();
           //          string yy = s["movie_time"].ToString();
-          //          string w = s["movie_country"].ToString();
-          //          string tt = s["movie_actor1"].ToString();
           movies.Add(s["movie_name"].ToString());
+          movies.Add(s["name_eng"].ToString());
+          movies.Add(s["movie_i_rate"].ToString());
+
+          //        movies.Add(s["movie_country"].ToString());
+          //          string tt = s["movie_actor1"].ToString();
+          //         movies.Add(s["movie_name"].ToString());
+          //movies.Add(s["cou"].ToString());
+
         }
         return movies;
       }

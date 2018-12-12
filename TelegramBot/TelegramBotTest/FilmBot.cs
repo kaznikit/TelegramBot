@@ -26,8 +26,8 @@ namespace TelegramBotTest
       //var y = client();
       commands = new List<string> { "/genre", "/actor", "/setting", "/country", "/help" };
 
-      //    string conn = "Data Source = C:\\Users\\nkazachenko\\movie db\\kino_data.db; Version=3;New=False;Compress=True;";
-      string conn = "Data Source = D:\\Repository\\TelegramBot\\TelegramBot\\TelegramBotTest\\Database\\kino_data.db; Version=3;New=False;Compress=True;";
+      string conn = "Data Source = C:\\Users\\nkazachenko\\Source\\Repos\\TelegramBot\\TelegramBot\\TelegramBotTest\\Database\\kino_data.db; Version=3;New=False;Compress=True;";
+      //string conn = "Data Source = D:\\Repository\\TelegramBot\\TelegramBot\\TelegramBotTest\\Database\\kino_data.db; Version=3;New=False;Compress=True;";
 
       databaseWorker = new DatabaseWorker(conn);
 
@@ -67,7 +67,6 @@ namespace TelegramBotTest
 
             //добавляем в лист фильмы по каждому жанру
             List<string> filmsList = new List<string>();
-
 
             int k = 0;
             foreach (var id in genresId)
@@ -118,9 +117,10 @@ namespace TelegramBotTest
           break;
         case "country":
           if (e.Message.Text != "/country")
-          {
+          {                      
             List<string> countries = SplitRowByColumn(new List<string>(), RemoveWhitespace(e.Message.Text), 0);
-            string query = "select movie_name from big_kino_data where movie_country = '";
+            countries = MakeProperStringWithUpperCase(countries);
+            string query = "select top 5 movie_name from big_kino_data where movie_country = '";
             bool flag = false;
             foreach (var country in countries)
             {
@@ -131,15 +131,12 @@ namespace TelegramBotTest
               query += country + "'";
               flag = true;
             }
-
+            //рандомим данные
+            query += " order by RANDOM() limit 5";
             var filmsList1 = databaseWorker.LoadData(query);
 
-            var uniqueFilms1 = filmsList1.GroupBy(x => x)
-              .Where(group => group.Count() > 1)
-              .Select(group => group.Key);
-
             string text = $"List of films: {Environment.NewLine}";
-            foreach (var s in uniqueFilms1)
+            foreach (var s in filmsList1)
             {
               text += s + Environment.NewLine;
             }
@@ -163,6 +160,10 @@ namespace TelegramBotTest
           break;
         case "/country":
           switcher = "country";
+          break;
+        case "/similar":
+          //искать похожий фильм на заданный
+          switcher = "similar";
           break;
         case "/help":
           var text = "Hello! This bot helps to find amazing film!\nYou can check commands below.\n";
@@ -192,9 +193,60 @@ namespace TelegramBotTest
 
         public void StartBot()
         {
-            //WebProxy wp = new WebProxy("ojtbp.tgproxy.me");
-            //wp.Credentials = new NetworkCredential("telegram", "telegram");
-            filmBot = new TelegramBotClient("404062526:AAHM35vggvveFFyvcM_JZhXslZAAGTFGuFg");//, wp);
+      //WebProxy wp = new WebProxy("ojtbp.tgproxy.me");
+      //wp.Credentials = new NetworkCredential("telegram", "telegram");
+
+
+
+      var str = "великОбриТания";
+
+      List<string> countries = new List<string>();//SplitRowByColumn(new List<string>(), RemoveWhitespace(e.Message.Text), 0);
+      countries.Add("великОбриТания");
+      countries = MakeProperStringWithUpperCase(countries);
+  //    countries.Add("США");
+      string query = "select movie_actor1 from dist_kino_data where movie_country = '";
+      bool flag = false;
+      foreach (var country in countries)
+      {
+        if (flag)
+        {
+          query += " and movie_country = '";
+        }
+        query += country + "'";
+        flag = true;
+      }
+      //рандомим данные
+      query += " order by RANDOM() limit 5";
+
+      //query = "select movie_name, Count(movie_name) 'cou' from big_kino_data GROUP BY movie_name HAVING cou > 1 limit 10";
+      query = "select distinct name_eng, movie_name, movie_i_rate from kino_data where movie_actor1 = 'Брэд Питт'";
+      var filmsList1 = databaseWorker.LoadData(query);
+
+      string text = $"List of films: {Environment.NewLine}";
+      foreach (var s in filmsList1)
+      {
+        text += s + Environment.NewLine;
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      filmBot = new TelegramBotClient("404062526:AAHM35vggvveFFyvcM_JZhXslZAAGTFGuFg");//, wp);
             var me = filmBot.GetMeAsync().Result;
            // me.Wait();
             filmBot.OnMessage += FilmBot_OnMessage;
@@ -231,6 +283,18 @@ namespace TelegramBotTest
             }
             return uniques;
         }
+
+    private List<string> MakeProperStringWithUpperCase(List<string> strList)
+    {
+      List<string> finalList = new List<string>();
+      foreach (var str in strList)
+      {
+        string x;
+        x = str.First().ToString().ToUpper() + str.ToLower().Substring(1);
+        finalList.Add(x);
+      }
+      return finalList;
+    }
 
         private void LoadFilms()
         {
