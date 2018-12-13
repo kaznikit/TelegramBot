@@ -40,8 +40,8 @@ namespace TelegramBotTest
           //          string gg = s["list_name"].ToString();
           //          string yy = s["movie_time"].ToString();
           movies.Add(s["movie_name"].ToString());
-          movies.Add(s["name_eng"].ToString());
-          movies.Add(s["movie_i_rate"].ToString());
+          //movies.Add(s["name_eng"].ToString());
+          //movies.Add(s["movie_i_rate"].ToString());
 
           //        movies.Add(s["movie_country"].ToString());
           //          string tt = s["movie_actor1"].ToString();

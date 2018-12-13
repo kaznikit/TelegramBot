@@ -15,15 +15,15 @@ using System.Windows.Shapes;
 
 namespace TelegramBotTest
 {
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+  /// <summary>
+  /// Логика взаимодействия для MainWindow.xaml
+  /// </summary>
+  public partial class MainWindow : Window
+  {
+    public MainWindow()
     {
-        public MainWindow()
-        {
-            InitializeComponent();
-            FilmBot filmBot = new FilmBot();
-        }
+      InitializeComponent();  
+      FilmBot filmBot = new FilmBot();
     }
+  }
 }
