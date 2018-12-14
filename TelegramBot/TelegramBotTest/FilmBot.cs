@@ -29,13 +29,14 @@ namespace TelegramBotTest
       //var y = client();
       commands = new List<string> { "/genre", "/actor", "/setting", "/country", "/help" };
 
-      //string conn = "Data Source = C:\\Users\\nkazachenko\\Source\\Repos\\TelegramBot\\TelegramBot\\TelegramBotTest\\Database\\kino_data.db; Version=3;New=False;Compress=True;";
-      string conn = "Data Source = D:\\Repository\\TelegramBot\\TelegramBot\\TelegramBotTest\\Database\\kino_data.db; Version=3;New=False;Compress=True;";
+      string conn = "Data Source = C:\\Users\\nkazachenko\\Source\\Repos\\TelegramBot\\TelegramBot\\TelegramBotTest\\Database\\kino_data.db; Version=3;New=False;Compress=True;";
+      //string conn = "Data Source = D:\\Repository\\TelegramBot\\TelegramBot\\TelegramBotTest\\Database\\kino_data.db; Version=3;New=False;Compress=True;";
 
       databaseWorker = new DatabaseWorker(conn);
 
       //     databaseWorker.LoadData("select * from dist_big_kino_data");
-      dataContext = new DataContext();
+
+      //dataContext = new DataContext();
 
  //     LoadFilms();
       StartBot();
@@ -101,44 +102,70 @@ namespace TelegramBotTest
 
             //если написали несколько жанров, ищем айди этих жанров
             List<int> actorsId = new List<int>();
-
-            for (int i = 0; i < actors.Count; i++)
+            if (dataContext != null)
             {
-              string actor = actors[i].ToLower().Trim();
-              foreach (var y in dataContext.Persons)
+              for (int i = 0; i < actors.Count; i++)
               {
-                if (actor == y.Name.ToLower())
+                string actor = actors[i].ToLower().Trim();
+                foreach (var y in dataContext.Persons)
                 {
-                  actorsId.Add(y.Id);
-                  break;
+                  if (actor == y.Name.ToLower())
+                  {
+                    actorsId.Add(y.Id);
+                    break;
+                  }
                 }
               }
-            }           
-                   
-            List<string> filmsList = new List<string>();
-            string query = "with t0 as ";
-            string query1 = "select Title from Movies where Id in (select m0 from t0 ";
-            string column = ",";
-            bool isColumn = false;
-            for (int i = 0; i < actorsId.Count; i++)
+            }
+            //if found actors in database
+            if (actorsId.Count != 0)
             {
-              if (isColumn)
+              List<string> filmsList = new List<string>();
+              string query = "with t0 as ";
+              string query1 = "select Title from Movies where Id in (select m0 from t0 ";
+              string column = ",";
+              bool isColumn = false;
+              for (int i = 0; i < actorsId.Count; i++)
               {
-                query += column + $"t{i} as ";
-                query1 += $"inner join t{i} on m{i - 1} = m{i} ";
+                if (isColumn)
+                {
+                  query += column + $"t{i} as ";
+                  query1 += $"inner join t{i} on m{i - 1} = m{i} ";
+                }
+                query += $"(select Movie_Id 'm{i}' from PersonMovies where Person_Id = {actorsId[i]})";
+                isColumn = true;
               }
-              query += $"(select Movie_Id 'm{i}' from PersonMovies where Person_Id = {actorsId[i]})";
-              isColumn = true;
-            }
-            query += query1 + ")";
-            List<string> movies = dataContext.Database.SqlQuery<string>(query).ToList();
+              query += query1 + ")";
+              List<string> movies = dataContext.Database.SqlQuery<string>(query).ToList();
 
-            string text1 = $"List of films: {Environment.NewLine}";
-            for (int j = 0; j < 10 && j < movies.ToList().Count(); j++)
-            {
-              text1 += movies.ToList()[j] + Environment.NewLine;
+              string text1 = $"List of films: {Environment.NewLine}";
+              for (int j = 0; j < 10 && j < movies.ToList().Count(); j++)
+              {
+                text1 += movies.ToList()[j] + Environment.NewLine;
+              }
+              await filmBot.SendTextMessageAsync(chatId: e.Message.Chat, text: text1);
             }
-            await filmBot.SendTextMessageAsync(chatId: e.Message.Chat, text: text1);    
+            //check in other database
+            else
+            {
+              string query = "select distinct movie_name from kino_data where ";
+              bool isAnd = false;
+              for(int i = 0; i<2 && i<actors.Count;i++)
+              {
+                if (isAnd)
+                {
+                  query += " and ";
+                }
+                query += $"movie_actor{i + 1} LIKE '%{actors[i]}%'";
+              }
+              var filmsList = databaseWorker.LoadData(query);
+              string text = $"List of films: {Environment.NewLine}";
+              foreach (var s in filmsList)
+              {
+                text += s + Environment.NewLine;
+              }
+              await filmBot.SendTextMessageAsync(chatId: e.Message.Chat, text: text);
+            }
           }
           break;
         case "similar":
