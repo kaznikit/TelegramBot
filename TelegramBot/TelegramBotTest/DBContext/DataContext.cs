@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data.Entity;
+using System.Data.Entity.Infrastructure;     
 using TelegramBotTest.Models;
 
 namespace TelegramBotTest.DBContext
 {
-  // Класс конфигурации
+  /// <summary>
+  /// Configuration class for cache database
+  /// </summary>
   public class MyDbConfig : DbConfiguration
   {
     public MyDbConfig()
@@ -21,6 +18,9 @@ namespace TelegramBotTest.DBContext
     }
   }
 
+  /// <summary>
+  /// Data context for code-first method of creation cache database.
+  /// </summary>
   [DbConfigurationType(typeof(MyDbConfig))]
   public class DataContext : DbContext
   {    
@@ -28,9 +28,19 @@ namespace TelegramBotTest.DBContext
     public DataContext() : base("Movies")
     { }
 
-    // Отражение таблиц базы данных на свойства с типом DbSet
+    /// <summary>
+    /// Table with genres.
+    /// </summary>
     public DbSet<Genre> Genres { get; set; }
+
+    /// <summary>
+    /// Table with movies.
+    /// </summary>
     public DbSet<Movie> Movies { get; set; }
+
+    /// <summary>
+    /// Table with actors.
+    /// </summary>
     public DbSet<Person> Persons { get; set; }
 
   }

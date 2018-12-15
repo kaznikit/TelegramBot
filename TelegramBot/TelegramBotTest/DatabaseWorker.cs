@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SQLite;       
 
 namespace TelegramBotTest
 {
+  /// <summary>
+  /// Class for interaction with SQLite database.
+  /// </summary>
   public class DatabaseWorker
   {
     SQLiteConnection connection;
+    /// <summary>
+    /// Main class constructor.
+    /// </summary>
+    /// <param name="connectionStr">Connection string for the database.</param>
     public DatabaseWorker(string connectionStr)
     {
       try
@@ -24,6 +28,11 @@ namespace TelegramBotTest
       }
     }
 
+    /// <summary>
+    /// Get movies from the database.
+    /// </summary>
+    /// <param name="query">SQL query to get movies from the database.</param>
+    /// <returns>List of movie names.</returns>
     public List<string> LoadData(string query)
     {
       try
@@ -34,20 +43,8 @@ namespace TelegramBotTest
         dataAdapter.Fill(dataSet);
         List<string> movies = new List<string>();
         foreach (DataRow s in dataSet.Tables[0].Rows)
-        {
-          //          string name = s["name_eng"].ToString();
-          // string name2 = s["movie_name"].ToString();
-          //          string gg = s["list_name"].ToString();
-          //          string yy = s["movie_time"].ToString();
-          movies.Add(s["movie_name"].ToString());
-          //movies.Add(s["name_eng"].ToString());
-          //movies.Add(s["movie_i_rate"].ToString());
-
-          //        movies.Add(s["movie_country"].ToString());
-          //          string tt = s["movie_actor1"].ToString();
-          //         movies.Add(s["movie_name"].ToString());
-          //movies.Add(s["cou"].ToString());
-
+        {                                                   
+          movies.Add(s["movie_name"].ToString());    
         }
         return movies;
       }
